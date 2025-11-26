@@ -1,0 +1,20 @@
+*.sbatch
+*.sh
+.vscode/
+# Ignore specific directories and files as requested
+solved_pdf/*
+origin_pdf/*
+pre-test/
+post-analysis/
+backup/
+final_output/*
+model/*
+matmech4figshare/
+log/
+visual/
+output_file/
+runs/
+train_image_model/*
+# Ignore Python cache directory
+__pycache__/
+
