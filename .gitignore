@@ -4,7 +4,7 @@
 # Ignore specific directories and files as requested
 solved_pdf
 origin_pdf
-
+README_local.md
 pre-test/
 post-analysis/
 backup/
