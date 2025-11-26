@@ -2,8 +2,9 @@
 *.sh
 .vscode/
 # Ignore specific directories and files as requested
-solved_pdf/*
-origin_pdf/*
+solved_pdf
+origin_pdf
+
 pre-test/
 post-analysis/
 backup/
