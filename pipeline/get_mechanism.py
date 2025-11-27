@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import argparse
 from tqdm import tqdm
-from utils.model import generate_answer_api, generate_answer_local_api
+from component.utils import generate_answer_api, generate_answer_local_api
 
 system_message = "You are an expert in the field of materials science."
 

@@ -11,7 +11,7 @@ def extract_json(content):
             json_obj = None
     else:
         print("content", content)
-        json_obj = None  # 表示 None 或解析失败
+        json_obj = None
     return json_obj
 
 tetrahedron = {}

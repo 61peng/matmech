@@ -11,14 +11,16 @@ instruction/mechanism_v1.md
 pre-test/
 post-analysis/
 backup/
-final_output/*
-model/*
 matmech4figshare/
 log/
 visual/
 output_file/
 runs/
-train_image_model/*
+train_image_model/
+utils/
+
+final_output/*
+model/*
 # Ignore Python cache directory
 __pycache__/
 

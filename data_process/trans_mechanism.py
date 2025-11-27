@@ -12,7 +12,7 @@ for line in open(f"output_file/{journal_name}/raw_data/mechanism_Qwen3-Next-80B-
     if match:
         try:
             mechanism_json_str = match.group(1)
-            mechanism_json = json.loads(mechanism_json_str)  # 解析 JSON
+            mechanism_json = json.loads(mechanism_json_str)
 
         except json.JSONDecodeError as e:
             print(f"{info["doi"]}\tJSONDecodeError: {e}")

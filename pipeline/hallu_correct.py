@@ -5,7 +5,7 @@ from tqdm import tqdm
 import argparse
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from utils.model import generate_answer_api, generate_answer_local_api
+from component.utils import generate_answer_api, generate_answer_local_api
 
 #############################################
 # 配置

@@ -2,7 +2,7 @@ import os
 import json
 import argparse
 from transformers import pipeline, AutoTokenizer
-from tqdm import tqdm
+from component.utils import tqdm
 
 #############################################
 # 参数解析

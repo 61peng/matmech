@@ -3,7 +3,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import json
 import argparse
-from utils.model import generate_answer_local_api
+from component.utils import generate_answer_local_api
 from pathlib import Path
 from tqdm import tqdm
 

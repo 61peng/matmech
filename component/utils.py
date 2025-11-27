@@ -1,9 +1,52 @@
-import os
+import torch
+import transformers
+from transformers import AutoModelForCausalLM, BitsAndBytesConfig
+from peft import PeftModel, AutoPeftModelForCausalLM
 import json
 from openai import OpenAI
-import transformers
-import torch
 
+class ModelUtils(object):
+
+    @classmethod
+    def load_model(cls, model_name_or_path, load_in_4bit=False, adapter_name_or_path=None):
+        # 是否使用4bit量化进行推理
+        if load_in_4bit:
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=torch.float16,
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_quant_type="nf4",
+                llm_int8_threshold=6.0,
+                llm_int8_has_fp16_weight=False,
+            )
+        else:
+            quantization_config = None
+
+        if "full" in adapter_name_or_path:
+            model = AutoModelForCausalLM.from_pretrained(
+                adapter_name_or_path,
+                # load_in_4bit=load_in_4bit,
+                trust_remote_code=True,
+                low_cpu_mem_usage=True,
+                torch_dtype=torch.float16,
+                device_map='auto',
+                quantization_config=quantization_config
+            )
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                model_name_or_path,
+                # load_in_4bit=load_in_4bit,
+                trust_remote_code=True,
+                low_cpu_mem_usage=True,
+                torch_dtype=torch.float16,
+                device_map='auto',
+                quantization_config=quantization_config
+            )
+            model = PeftModel.from_pretrained(model, adapter_name_or_path, torch_dtype=torch.float16)
+            # model = AutoPeftModelForCausalLM.from_pretrained(adapter_name_or_path).to('cuda')
+        print("successefully loaded model and adapter")
+        return model
+    
 def load_model(engine, model_path):
     from vllm import LLM
     if engine == "vllm":
@@ -43,11 +86,10 @@ def generate_answer_vllm(llm, messages, max_tokens=8196):
 def generate_answer_api(messages, model_name, max_tokens=8196):
     if model_name == "deepseek-chat":
         base_url = "https://api.deepseek.com"
-        api_key='sk-1b58ecfdc4174a9dbbfc511b28fbd6b1'
+        api_key=''
     else:
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
-        api_key="sk-bb1a33f6cf9747bc821ecd5d33ee6586"
-        # sk-1a11e10e87a246d8af13e923afc027c2/sk-c01673fcd1fc4266a2bc8e897df5150b
+        api_key=""
     client = OpenAI(
         base_url=base_url,
         api_key=api_key,
@@ -77,7 +119,7 @@ def generate_answer_local_api(messages, model_name, max_tokens=8196):
     # print("Now using Qwen3-235B-A22B local API")
     client = OpenAI(
         api_key="not used",
-        base_url="http://172.17.65.43:8000/v1",
+        base_url="http://xxxx:8000/v1",
     )
     try:
         chat_completion = client.chat.completions.create(

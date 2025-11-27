@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 # os.environ["CUDA_VISIBLE_DEVICES"] = "2,3"
-from utils.model import generate_answer_api, generate_answer_local_api
+from component.utils import generate_answer_api, generate_answer_local_api
 import argparse
 from tqdm import tqdm
 
