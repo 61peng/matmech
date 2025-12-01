@@ -1,13 +1,13 @@
 *.sbatch
 *.sh
+*.out
 .vscode/
 # Ignore specific directories and files as requested
 solved_pdf
 origin_pdf
 README_local.md
-instruction/domain_v1.md
-instruction/mechanism_v1.md
 
+instruction_local/
 pre-test/
 post-analysis/
 backup/
@@ -21,6 +21,7 @@ utils/
 
 final_output/*
 model/*
+adapter/*
 # Ignore Python cache directory
 __pycache__/
 

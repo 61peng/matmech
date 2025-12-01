@@ -9,19 +9,17 @@ from component.utils import generate_answer_api, generate_answer_local_api
 system_message = "You are an expert in the field of materials science."
 
 # 从instruction/mechanism_v2.md中读取
-instruction = open("instruction/mechanism_v2.md", "r", encoding="utf-8").read()
+instruction = open("instruction/mechanism.md", "r", encoding="utf-8").read()
 
 INPUT_TEMPLATE = "{instruction}\nHere is the material science paper in json list format:\n\n```json\n{paper_list}\n```\nHere is the core knowledge dictionary:\n\n```json\n{core_information}\n```"
 
 if __name__ == '__main__':
     # 首先读取已处理的文件
     parser = argparse.ArgumentParser(description='step3 arguments')
-    parser.add_argument('--model_name', type=str, default='Qwen3-Next-80B-A3B-Instruct')
+    parser.add_argument('--model_name', type=str)
     parser.add_argument('--engine', type=str, default='local_api', choices=['local_api', "api"])
-    parser.add_argument('--journal_name', type=str, default="Advanced_Energy_Materials")
-    # parser.add_argument('--tetrahedron_path', type=str, default='output_file/nama/tetrahedron.json')
-    # parser.add_argument('--image_path', type=str, default='output_file/nama/images_function.json')
-    # parser.add_argument('--output_path', type=str, default='output_file/nama/mechanism_deepseekv3.jsonl')
+    parser.add_argument('--journal_name', type=str)
+
     args = parser.parse_args()
     # 打印参数
     print(args)

@@ -1,0 +1,27 @@
+{
+  "train_batch_size": "auto",
+  "gradient_accumulation_steps": "auto",
+  "gradient_clipping": "auto",
+  "train_micro_batch_size_per_gpu": "auto",
+  "steps_per_print": 1,
+  "zero_optimization": {
+    "stage": 3,
+    "offload_param": {
+      "device": "auto"
+    },
+    "offload_optimizer": {
+      "device": "auto"
+    },
+    "stage3_gather_16bit_weights_on_model_save": true
+  },
+  "bf16": {
+    "enabled": false
+  },
+  "fp16": {
+    "enabled": true,
+    "loss_scale": 0,
+    "loss_scale_window": 100
+  },
+  "prescale_gradients": false,
+  "wall_clock_breakdown": false
+}

@@ -44,7 +44,7 @@ class SFTDataCollator(object):
         attention_mask_batch = torch.tensor(attention_mask_batch, dtype=torch.long)
         target_mask_batch = torch.tensor(target_mask_batch, dtype=torch.long)
 
-        labels = torch.where(target_mask_batch == 1, input_ids_batch, -100)#-100所在位置的token不参与loss计算，即只有assistant的部分（模型回答）参与loss计算
+        labels = torch.where(target_mask_batch == 1, input_ids_batch, -100)
         inputs = {
             'input_ids': input_ids_batch,
             'attention_mask': attention_mask_batch,
