@@ -5,7 +5,7 @@ from tqdm import tqdm
 import argparse
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from component.utils import generate_answer_api, generate_answer_local_api
+from utils.model import generate_answer_api, generate_answer_local_api
 
 #############################################
 # 配置
@@ -62,7 +62,10 @@ def fetch_source_text(all_texts, source_indices):
     collected = []
     for idx in source_indices:
         if 0 <= idx < len(all_texts):
-            collected.append(all_texts[idx])
+            try:
+                collected.append(all_texts[idx])
+            except:
+                continue
     return collected
 
 def generate_hallu(engine, model_name, prompt):
@@ -74,10 +77,11 @@ def generate_hallu(engine, model_name, prompt):
         output = generate_answer_api(messages, model_name)
     else:
         output = generate_answer_local_api(messages, model_name)
+    
+    if output:
+        output = extract_json(output)
 
-    hallu = extract_json(output)
-
-    return hallu
+    return output
 
 
 def judge_and_write(claim, source_ids, container, all_texts, engine, model_name):
@@ -92,8 +96,8 @@ def judge_and_write(claim, source_ids, container, all_texts, engine, model_name)
     
     prompt = instruction.format(paper_json=all_texts, claim=claim, excluded_block=premise)
     hallu_json = generate_hallu(engine, model_name, prompt)
-
-    container['hallu_correction'] = hallu_json
+    if hallu_json:
+        container['hallu_correction'] = hallu_json
 
 
 def process_mechanism_with_llm(mech_json, all_texts, engine, model_name):
@@ -159,7 +163,7 @@ def main():
     parser = argparse.ArgumentParser(description='hallucination detection arguments')
     parser.add_argument('--model_name', type=str, default='Qwen3-Next-80B-A3B-Instruct', choices=['Qwen3-Next-80B-A3B-Instruct', 'qwen-plus-latest'])
     parser.add_argument('--engine', type=str, default='local_api', choices=['local_api', "api"])
-    parser.add_argument('--journal_name', type=str, default='Advanced_Energy_Materials')
+    parser.add_argument('--journal_name', type=str, default='Advanced_Materials')
     args = parser.parse_args()
 
     journal = args.journal_name
@@ -200,7 +204,7 @@ def main():
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(new_json, f, indent=2, ensure_ascii=False)
 
-        print(f"Processed and saved hallucination results for {doi} -> {out_path}")
+        # print(f"Processed and saved hallucination results for {doi} -> {out_path}")
 
 
 if __name__ == "__main__":

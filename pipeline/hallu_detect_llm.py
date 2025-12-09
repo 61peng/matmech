@@ -63,7 +63,10 @@ def fetch_source_text(all_texts, source_indices):
     collected = []
     for idx in source_indices:
         if 0 <= idx < len(all_texts):
-            collected.append(all_texts[idx])
+            try:
+                collected.append(all_texts[idx])
+            except:
+                continue
     return collected
 
 def generate_hallu(engine, model_name, prompt):
@@ -152,7 +155,7 @@ def main():
     parser = argparse.ArgumentParser(description='hallucination detection arguments')
     parser.add_argument('--model_name', type=str, default='Qwen3-Next-80B-A3B-Instruct', choices=['Qwen3-Next-80B-A3B-Instruct', 'qwen-plus-latest'])
     parser.add_argument('--engine', type=str, default='local_api', choices=['local_api', "api"])
-    parser.add_argument('--journal_name', type=str, default='Journal_of_Magnesium_and_Alloys')
+    parser.add_argument('--journal_name', type=str, default='Advanced_Materials')
     args = parser.parse_args()
 
     journal = args.journal_name
@@ -193,7 +196,7 @@ def main():
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(new_json, f, indent=2, ensure_ascii=False)
 
-        print(f"Processed and saved hallucination results for {doi} -> {out_path}")
+        # print(f"Processed and saved hallucination results for {doi} -> {out_path}")
 
 
 if __name__ == "__main__":

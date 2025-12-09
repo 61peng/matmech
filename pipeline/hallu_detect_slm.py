@@ -2,7 +2,7 @@ import os
 import json
 import argparse
 from transformers import pipeline, AutoTokenizer
-from component.utils import tqdm
+from tqdm import tqdm
 
 #############################################
 # 参数解析
@@ -10,9 +10,9 @@ from component.utils import tqdm
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--journal", type=str, required=True,
+    parser.add_argument("--journal", type=str, default="Advanced_Materials",
                         help="Journal name, e.g. Advanced_Materials")
-    parser.add_argument("--gpu", type=str, default="0",
+    parser.add_argument("--gpu", type=str, default="7",
                         help="GPU id, e.g. 0 or 7")
     parser.add_argument("--model", type=str, default="model/hallucination_evaluation_model",
                         help="Path to hallucination evaluation model")
@@ -45,7 +45,10 @@ def fetch_source_text(all_texts, source_indices):
     collected = []
     for idx in source_indices:
         if 0 <= idx < len(all_texts):
-            collected.append(all_texts[idx])
+            try:
+                collected.append(all_texts[idx])
+            except:
+                continue
     return "\n".join(collected) if collected else ""
 
 
@@ -82,26 +85,31 @@ def gather_pairs(mech_json, all_texts):
         imgs = block.get("images", [])
         if isinstance(imgs, dict):
             imgs = [imgs]
-        for img in imgs:
-            if "image description" in img and "source" in img:
-                prem = fetch_source_text(all_texts, img["source"])
-                hyp = img["image description"]
-                if prem and hyp:
-                    add_pair(pairs, img, "image description", prem, hyp)
+        if imgs:
+            for img in imgs:
+                if "image description" in img and "source" in img:
+                    prem = fetch_source_text(all_texts, img["source"])
+                    hyp = img["image description"]
+                    if prem and hyp:
+                        add_pair(pairs, img, "image description", prem, hyp)
 
         # referenced_knowledge
-        for refk in block.get("referenced_knowledge", []):
-            prem = fetch_source_text(all_texts, refk.get("source", []))
-            hyp = refk.get("content")
-            if prem and hyp:
-                add_pair(pairs, refk, "content", prem, hyp)
+        refks = block.get("referenced_knowledge", [])
+        if refks:
+            for refk in refks:
+                prem = fetch_source_text(all_texts, refk.get("source", []))
+                hyp = refk.get("content")
+                if prem and hyp:
+                    add_pair(pairs, refk, "content", prem, hyp)
 
         # domain_knowledge
-        for dk in block.get("domain_knowledge", []):
-            prem = fetch_source_text(all_texts, dk.get("source", []))
-            hyp = dk.get("content")
-            if prem and hyp:
-                add_pair(pairs, dk, "content", prem, hyp)
+        dks = block.get("domain_knowledge", [])
+        if dks:
+            for dk in block.get("domain_knowledge", []):
+                prem = fetch_source_text(all_texts, dk.get("source", []))
+                hyp = dk.get("content")
+                if prem and hyp:
+                    add_pair(pairs, dk, "content", prem, hyp)
 
         # mechanism.description
         mech = block.get("mechanism")
@@ -121,7 +129,7 @@ def gather_pairs(mech_json, all_texts):
 def run(journal, gpu, model):
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu
 
-    INPUT_DIR = f"final_output/{journal}"
+    INPUT_DIR = f"merged_data/{journal}"
     OUTPUT_DIR = f"output_file/{journal}/hallucination_slm"
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -138,12 +146,13 @@ def run(journal, gpu, model):
         tokenizer=AutoTokenizer.from_pretrained("model/flan-t5-base"),
         trust_remote_code=True
     )
-
+    solved_paper = set(os.listdir(OUTPUT_DIR))
     # 遍历每篇 paper
     for fname in tqdm(os.listdir(INPUT_DIR)):
         if not fname.endswith(".json"):
             continue
-
+        if fname in solved_paper:
+            continue
         doi = fname[:-5]
         mech_file = os.path.join(INPUT_DIR, fname)
         knowledge_json = json.load(open(mech_file, "r", encoding="utf-8"))
@@ -151,7 +160,7 @@ def run(journal, gpu, model):
 
         # 加载论文全文
         all_texts = load_paper_content(doi, journal)
-
+        
         # 收集所有 pair
         pairs = gather_pairs(mech_json, all_texts)
         if not pairs:
