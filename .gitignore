@@ -16,6 +16,8 @@ matmech4figshare/
 log/
 visual/
 output_file/
+training_data/
+matmech/
 runs/
 train_image_model/
 data_process/
