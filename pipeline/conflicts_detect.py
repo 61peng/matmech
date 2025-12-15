@@ -5,7 +5,7 @@ from tqdm import tqdm
 import argparse
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from utils.model import generate_answer_api, generate_answer_local_api
+from component.utils import generate_answer_api, generate_answer_local_api
 
 
 
@@ -17,9 +17,6 @@ restrict = "\n\nPlease return ONLY valid JSON output in the required format. No 
 
 
 def extract_json(content):
-    """
-    从大模型输出中提取 JSON（兼容 ```json ``` 包裹格式）
-    """
     match = re.search(r"```json\n(.*?)\n```", content, re.DOTALL)
     if match:
         json_str = match.group(1).strip()
@@ -65,13 +62,10 @@ def generate_conflict(engine, model_name, prompt):
     return output
 
 
-#############################################
-# 核心处理逻辑
-#############################################
 
 def process_single_file(json_file, out_dir, sim_thres, engine, model_name):
     """
-    对 topk_retrieval 中每个 json 文件执行冲突检测
+    process conflict detection for each json in topk_retrieval
     """
 
     data = json.load(open(json_file, "r", encoding="utf-8"))
@@ -81,7 +75,7 @@ def process_single_file(json_file, out_dir, sim_thres, engine, model_name):
     for item in data:
         source_sentence = item["sentence"]
 
-        # 筛选 similarity > 阈值 的 candidates
+        # filter candidates whose similarity > threshold
         cand_filtered = []
         for c in item.get("candidates", []):
             if c["similarity"] >= sim_thres:
@@ -96,10 +90,9 @@ def process_single_file(json_file, out_dir, sim_thres, engine, model_name):
         if len(cand_filtered) == 0:
             continue
 
-        # 构造 prompt
+        # construct prompt
         prompt = build_prompt(source_sentence, cand_filtered)
 
-        # 调用模型
         conflict_json = generate_conflict(engine, model_name, prompt)
         
         if conflict_json:

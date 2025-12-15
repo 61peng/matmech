@@ -4,9 +4,6 @@ import argparse
 from transformers import pipeline, AutoTokenizer
 from tqdm import tqdm
 
-#############################################
-# 参数解析
-#############################################
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -17,11 +14,6 @@ def parse_args():
     parser.add_argument("--model", type=str, default="model/hallucination_evaluation_model",
                         help="Path to hallucination evaluation model")
     return parser.parse_args()
-
-
-#############################################
-# 加载论文文本
-#############################################
 
 def load_paper_content(doi, journal):
     json_file = f"solved_pdf/{journal}/{doi}/auto/{doi}_content_list.json"
@@ -52,9 +44,6 @@ def fetch_source_text(all_texts, source_indices):
     return "\n".join(collected) if collected else ""
 
 
-#############################################
-# Pair 收集工具
-#############################################
 
 def add_pair(pairs, container, field_name, premise, hypothesis):
     pairs.append({
@@ -122,10 +111,6 @@ def gather_pairs(mech_json, all_texts):
     return pairs
 
 
-#############################################
-# 主流程
-#############################################
-
 def run(journal, gpu, model):
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu
 
@@ -147,7 +132,7 @@ def run(journal, gpu, model):
         trust_remote_code=True
     )
     solved_paper = set(os.listdir(OUTPUT_DIR))
-    # 遍历每篇 paper
+
     for fname in tqdm(os.listdir(INPUT_DIR)):
         if not fname.endswith(".json"):
             continue
@@ -158,15 +143,13 @@ def run(journal, gpu, model):
         knowledge_json = json.load(open(mech_file, "r", encoding="utf-8"))
         mech_json = knowledge_json.get("mechanism", [])
 
-        # 加载论文全文
         all_texts = load_paper_content(doi, journal)
         
-        # 收集所有 pair
+
         pairs = gather_pairs(mech_json, all_texts)
         if not pairs:
             continue
 
-        # 构建 prompts
         prompts = [
             PROMPT_TEMPLATE.format(premise=p["premise"], hypothesis=p["hypothesis"])
             for p in pairs
@@ -174,7 +157,6 @@ def run(journal, gpu, model):
 
         batch_scores = classifier(prompts, top_k=None)
 
-        # 写回检测结果
         for pair, score_set in zip(pairs, batch_scores):
             consistent_score = next(
                 (s["score"] for s in score_set if s["label"] == "consistent"),
@@ -190,7 +172,7 @@ def run(journal, gpu, model):
             }
             container["source_text"] = pair["premise"]
 
-        # 保存
+        # save
         out_path = os.path.join(OUTPUT_DIR, f"{doi}.json")
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(knowledge_json, f, indent=2, ensure_ascii=False)

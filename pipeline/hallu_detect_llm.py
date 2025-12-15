@@ -7,23 +7,15 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from component.utils import generate_answer_api, generate_answer_local_api
 
-#############################################
-# 配置
-#############################################
-
 
 instruction = open("instruction/hallu_detect.md", "r", encoding="utf-8").read()
 system_message = "You are an expert in the field of materials science."
 restrict = "\n\nPlease just output the json format as the example above. Do not output any other information."
 
-#############################################
-# 工具函数：根据 source 列表生成先验文本
-#############################################
-
 def load_paper_content(doi, journal):
     """
-    读取 solved_pdf/{journal}/{doi}/auto/{doi}_content_list.json
-    返回 text 列表（按出现顺序）
+    read solved_pdf/{journal}/{doi}/auto/{doi}_content_list.json
+    return text list
     """
     json_file = f"solved_pdf/{journal}/{doi}/auto/{doi}_content_list.json"
     if not os.path.exists(json_file):
@@ -51,15 +43,11 @@ def extract_json(content):
             json_obj = json.loads(content)
         except json.JSONDecodeError:
             print("content", content)
-            json_obj = None  # 表示 None 或解析失败
+            json_obj = None 
     return json_obj
 
 def fetch_source_text(all_texts, source_indices):
-    """
-    source_indices 是一组数字，比如 [13,29]
-    则返回 all_texts 中对应 index 的文本拼接
-    如果 index 超出范围，跳过
-    """
+
     collected = []
     for idx in source_indices:
         if 0 <= idx < len(all_texts):
@@ -85,12 +73,6 @@ def generate_hallu(engine, model_name, prompt):
 
 
 def judge_and_write(hypothesis, source_ids, container, all_texts, engine, model_name):
-    """
-    通用判断函数：
-    - hypothesis: 待判断文本
-    - source_ids: 文本出处编号列表
-    - container: 往哪个 dict 写入 hallu_detection 的那个 dict
-    """
 
     premise = fetch_source_text(all_texts, source_ids)
     
@@ -100,9 +82,7 @@ def judge_and_write(hypothesis, source_ids, container, all_texts, engine, model_
 
 
 def process_mechanism_with_llm(mech_json, all_texts, engine, model_name):
-    """
-    遍历 mech_json，针对需要检测的字段调用 judge_and_write()
-    """
+
     for block in mech_json:
 
         # 1. experiment
@@ -163,7 +143,6 @@ def main():
     out_dir = f"output_file/{journal}/hallucination_llm"
     os.makedirs(out_dir, exist_ok=True)
 
-    # 从out_dir获取已处理的doi列表，跳过已处理的
     processed_dois = set()
     for fname in os.listdir(out_dir):
         if fname.endswith(".json"):
@@ -186,12 +165,10 @@ def main():
         if not mech_json:
             continue
 
-        # 逐 pair 调用模型并写回 mech_json
         new_json = {}
         updated_mech = process_mechanism_with_llm(mech_json, all_texts, args.engine, args.model_name)
         new_json['mechanism'] = updated_mech
 
-        # 将每篇文献单独保存为 json 文件
         out_path = os.path.join(out_dir, f"{doi}.json")
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(new_json, f, indent=2, ensure_ascii=False)

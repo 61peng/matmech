@@ -9,7 +9,7 @@ class ModelUtils(object):
 
     @classmethod
     def load_model(cls, model_name_or_path, load_in_4bit=False, adapter_name_or_path=None):
-        # 是否使用4bit量化进行推理
+        # Whether to use 4-bit quantization for inference
         if load_in_4bit:
             quantization_config = BitsAndBytesConfig(
                 load_in_4bit=True,
@@ -50,7 +50,7 @@ class ModelUtils(object):
 def load_model(engine, model_path):
     from vllm import LLM
     if engine == "vllm":
-        # tensor_parallel_size为能使用的GPU数量
+        # tensor_parallel_size is the number of available GPUs
         gpu_num = torch.cuda.device_count()
         print(f"GPU number: {gpu_num}")
         llm = LLM(model=model_path, task="generate", tensor_parallel_size=gpu_num, gpu_memory_utilization=0.9, trust_remote_code=True)
@@ -106,7 +106,7 @@ def generate_answer_api(messages, model_name, max_tokens=8196):
             response_format={"type": "json_object"},
         )
         output = chat_completion.choices[0].message.content
-        # 如果output是数字字符串，则返回None
+        # If output is a numeric string, return None
         obj = json.loads(output)
         if not isinstance(obj, (dict, list)):
             raise ValueError("Parsed JSON is not a dict or list")
@@ -116,7 +116,7 @@ def generate_answer_api(messages, model_name, max_tokens=8196):
     return output
 
 def generate_answer_local_api(messages, model_name, max_tokens=8196):
-    # print("Now using Qwen3-235B-A22B local API")
+    # Using Qwen3-235B-A22B local API
     client = OpenAI(
         api_key="not used",
         base_url="http://xxxx:8000/v1",

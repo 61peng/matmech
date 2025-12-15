@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 
 class UnifiedSFTDataset(Dataset):
     """
-    统一的数据处理dataset
+    Unified data processing dataset
     """
     def __init__(self, file, tokenizer, max_seq_length, template):
         self.tokenizer = tokenizer
@@ -20,14 +20,14 @@ class UnifiedSFTDataset(Dataset):
         with open(file, 'r', encoding='utf8') as f:
             data_list = f.readlines()
         logger.info(f'Use template: {self.template_name} for training')
-        logger.info("There are {} data in dataset".format(len(data_list)))
+        logger.info("There are {} items in the dataset".format(len(data_list)))
         self.data_list = data_list
 
     def __len__(self):
         return len(self.data_list)
 
     def __getitem__(self, index):
-        # 每条数据拼接格式为: {system_format}{user_format}{assistant_format}{user_format}{assistant_format}...
+        # Each data example is concatenated as: {system_format}{user_format}{assistant_format}{user_format}{assistant_format}...
         data = self.data_list[index]
         data = json.loads(data)
         input_ids, target_mask = [], []
@@ -35,14 +35,14 @@ class UnifiedSFTDataset(Dataset):
         # setting system information
         if self.system_format is not None:
             system = data['system'].strip() if 'system' in data.keys() else self.system
-            # system信息不为空
+            # system information is not empty
             if system is not None:
                 system_text = self.system_format.format(content=system)
                 input_ids = self.tokenizer.encode(system_text, add_special_tokens=False)
                 target_mask = [0] * len(input_ids)
 
         conversations = data['conversation']
-        # 拼接多轮对话
+        # Concatenate multiple conversation turns
         for i, conv in enumerate(conversations):
             human = conv['human'].strip()
             assistant = conv['assistant'].strip()
@@ -60,7 +60,7 @@ class UnifiedSFTDataset(Dataset):
                 target_mask += [0] * len(input_tokens)
 
         assert len(input_ids) == len(target_mask)
-        # 对长度进行截断
+        # Truncate to max_seq_length
         input_ids = input_ids[:self.max_seq_length]
         target_mask = target_mask[:self.max_seq_length]
         attention_mask = [1] * len(input_ids)
@@ -76,7 +76,7 @@ class UnifiedSFTDataset(Dataset):
 class ChatGLM2SFTDataset(UnifiedSFTDataset):
 
     def __getitem__(self, index):
-        # 每条数据格式为: [gMASK]sop [Round 1]\n\n问：{input1}\n\n答：{target1}</s>[Round 2]\n\n问：{input2}\n\n答：{target2}</s>...
+        # Each data example format: [gMASK]sop [Round 1]\n\nQ:{input1}\n\nA:{target1}</s>[Round 2]\n\nQ:{input2}\n\nA:{target2}</s>...
         data = self.data_list[index]
         data = json.loads(data)
 
@@ -84,7 +84,7 @@ class ChatGLM2SFTDataset(UnifiedSFTDataset):
         target_mask = [0] * len(input_ids)
 
         conversations = data['conversation']
-        # 拼接多轮对话
+        # Concatenate multiple conversation turns
         for i, conv in enumerate(conversations):
             human = conv['human'].strip()
             assistant = conv['assistant'].strip()
@@ -99,7 +99,7 @@ class ChatGLM2SFTDataset(UnifiedSFTDataset):
             target_mask += [0] * len(input_tokens) + [1] * len(output_tokens)
 
         assert len(input_ids) == len(target_mask)
-        # 对长度进行截断
+        # Truncate to max_seq_length
         input_ids = input_ids[:self.max_seq_length]
         target_mask = target_mask[:self.max_seq_length]
         attention_mask = [1] * len(input_ids)
@@ -125,7 +125,7 @@ class ChatGLM3SFTDataset(UnifiedSFTDataset):
         target_mask = [0] * len(input_ids)
 
         conversations = data['conversation']
-        # 拼接多轮对话
+        # Concatenate multiple conversation turns
         for i, conv in enumerate(conversations):
             human = conv['human'].strip()
             assistant = conv['assistant'].strip()
@@ -139,7 +139,7 @@ class ChatGLM3SFTDataset(UnifiedSFTDataset):
             target_mask += [0] * len(input_tokens) + [1] * len(output_tokens)
 
         assert len(input_ids) == len(target_mask)
-        # 对长度进行截断
+        # Truncate to max_seq_length
         input_ids = input_ids[:self.max_seq_length]
         target_mask = target_mask[:self.max_seq_length]
         attention_mask = [1] * len(input_ids)

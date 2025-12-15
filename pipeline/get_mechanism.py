@@ -8,20 +8,17 @@ from component.utils import generate_answer_api, generate_answer_local_api
 
 system_message = "You are an expert in the field of materials science."
 
-# 从instruction/mechanism_v2.md中读取
 instruction = open("instruction/mechanism.md", "r", encoding="utf-8").read()
 
 INPUT_TEMPLATE = "{instruction}\nHere is the material science paper in json list format:\n\n```json\n{paper_list}\n```\nHere is the core knowledge dictionary:\n\n```json\n{core_information}\n```"
 
 if __name__ == '__main__':
-    # 首先读取已处理的文件
     parser = argparse.ArgumentParser(description='step3 arguments')
     parser.add_argument('--model_name', type=str)
     parser.add_argument('--engine', type=str, default='local_api', choices=['local_api', "api"])
     parser.add_argument('--journal_name', type=str)
 
     args = parser.parse_args()
-    # 打印参数
     print(args)
     tetrahedron_path = f"output_file/{args.journal_name}/processed_data/tetrahedron.json"
     image_path = f"output_file/{args.journal_name}/processed_data/images_function.json"
@@ -35,11 +32,9 @@ if __name__ == '__main__':
         _solved_list = [data['doi'] for data in [eval(line) for line in open(output_path, 'r', encoding='utf8')]]
         solved_list.extend(_solved_list)
     
-    # 去重
     solved_list = list(set(solved_list))
     f_o = open(output_path, "a+", encoding="utf-8")
 
-    # 遍历文件夹下的所有文件
     with open(tetrahedron_path, "r", encoding="utf-8") as f:
         json_dict = json.load(f)
     with open(image_path, "r", encoding="utf-8") as f:
