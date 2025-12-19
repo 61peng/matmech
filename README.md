@@ -276,6 +276,36 @@ Each DOI folder contains the complete multimodal content for one paper (text, im
 
 ---
 
+# **Exploratory Data Analysis**
+
+## Hallucination Analysis
+
+### Correlation between hallucinations and input data quality
+
+![alt text](images/hallu_corre.png)
+
+(a) reports the distribution of log-perplexity for consistent and hallucinated items;
+(b) visualizes KDE curves of log-perplexity for consistent and hallucinated items;
+(c) shows the regression trend between consistency confidence scores and log perplexity, and the statistical tests yield Spearman correlation of –0.0788 $(p=1.11\times{10}^{-48})$.
+
+This result indicates that input data quality is a contributing factor to hallucination, but not the dominant factor. The weak correlation is expected, as many hallucinations stem from reasoning errors or incomplete grounding rather than textual quality alone.
+
+### Hallucination variation across material domains and mechanism types
+
+Hallucination rates exhibit observable yet moderate variation across both mechanism types and material domains.
+
+![alt text](images/hallucination_analysis.png)
+
+Although the numerical differences are small, they consistently indicate that both material characteristics and mechanism semantics influence the likelihood of hallucination.
+
+## Dataset Coverage
+
+### Top countries and institutions in datasets
+
+![alt text](images/Country_and_institution.png)
+
+The country-level and institution-level distributions provide strong evidence that differences in research style across regions and institutions have been adequately considered and are well represented in the corpus.
+
 # **License**
 
 <!-- **MIT License** -->
